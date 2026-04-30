@@ -131,6 +131,21 @@ document.addEventListener('DOMContentLoaded', function () {
 		const isMobile = window.innerWidth <= 600;
 
 		content.innerHTML = '';
+		// ✅ MAP 주소 확인
+		const mapAddresses = infoText ? extractMapUrls(infoText) : [];
+		// ✅ 패널 제목 동적 설정
+		const hasMedia = mediaItems.length > 0;
+		const hasMap = mapAddresses.length > 0;
+
+		if (hasMedia && hasMap) {
+			panelTitle.textContent = '📷🗺️ Media & Map';
+		} else if (hasMap) {
+			panelTitle.textContent = '🗺️ Map';
+		} else if (mediaItems.some(item => item.type === 'video')) {
+			panelTitle.textContent = '🎬 Media Preview';
+		} else {
+			panelTitle.textContent = '📷 Media Preview';
+		}
 
 		mediaItems.forEach((item, index) => {
 			// 이미지/비디오 래퍼
