@@ -343,12 +343,25 @@ document.addEventListener('DOMContentLoaded', function () {
 				});
 			}
 
-			if (items.length > 0) {
+			// ✅ MAP 주소 확인
+			const mapAddresses = extractMapUrls(text);
+
+			// ✅ 미디어나 맵이 있으면 패널 열기
+			if (items.length > 0 || mapAddresses.length > 0) {
 				openMediaPanel(items, text, itemDataList);
 
 				const reopenBtn = document.createElement('button');
 				reopenBtn.className = 'media-preview-btn';
-				reopenBtn.textContent = '📷 View Attached Media';
+
+				// 버튼 텍스트를 상황에 맞게
+				if (items.length > 0 && mapAddresses.length > 0) {
+					reopenBtn.textContent = '📷🗺️ View Attached Media & Map';
+				} else if (mapAddresses.length > 0) {
+					reopenBtn.textContent = '🗺️ View Map';
+				} else {
+					reopenBtn.textContent = '📷 View Attached Media';
+				}
+
 				reopenBtn.style.cssText = 'background:#f0f4ff;border:1px solid #4361ee;color:#4361ee;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px;margin-top:4px;';
 				reopenBtn.onclick = () => {
 					const panel = document.getElementById('mediaSlidePanel');
