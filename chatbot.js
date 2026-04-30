@@ -364,10 +364,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 				reopenBtn.style.cssText = 'background:#f0f4ff;border:1px solid #4361ee;color:#4361ee;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px;margin-top:4px;';
 				reopenBtn.onclick = () => {
-					const panel = document.getElementById('mediaSlidePanel');
-					if (panel.style.display === 'none') {
-						openMediaPanel(items, text, itemDataList);
-					}
+					openMediaPanel(items, text, itemDataList);
 				};
 				content.appendChild(reopenBtn);
 			}
