@@ -101,6 +101,17 @@ document.addEventListener('DOMContentLoaded', function () {
 		return urls;
 	}
 
+	function extractMapUrls(text) {
+		const urls = [];
+		const regex = /\[MAP:\s*(.*?)\]/g;
+		let match;
+		while ((match = regex.exec(text)) !== null) {
+			urls.push(match[1].trim());
+		}
+		return urls;
+	}
+
+
 	function getVideoType(url) {
 		if (url.endsWith('.mp4')) return 'mp4';
 		if (url.endsWith('.mov')) return 'mov';
@@ -167,6 +178,37 @@ document.addEventListener('DOMContentLoaded', function () {
 			}
 		});
 
+		// ✅ MAP 주소가 있으면 지도 표시
+		if (infoText) {
+			const mapAddresses = extractMapUrls(infoText);
+			if (mapAddresses.length > 0) {
+				mapAddresses.forEach(address => {
+					const mapDiv = document.createElement('div');
+					mapDiv.className = 'media-map-section';
+					mapDiv.style.cssText = 'margin-bottom:16px;border-radius:12px;overflow:hidden;';
+
+					const encodedAddress = encodeURIComponent(address);
+					mapDiv.innerHTML = `
+                <div style="font-weight:600;font-size:13px;margin-bottom:6px;color:#333;">📍 ${address}</div>
+                <iframe 
+                    width="100%" 
+                    height="200" 
+                    style="border:0;border-radius:8px;" 
+                    loading="lazy" 
+                    referrerpolicy="no-referrer-when-downgrade"
+                    src="https://www.google.com/maps/embed/v1/place?key=AIzaSyAAi1AjHzAh-Cu-5YuxSSOu8L3e2sU9oNA&q=${encodedAddress}">
+                </iframe>
+                <a href="https://www.google.com/maps/search/?api=1&query=${encodedAddress}" 
+                   target="_blank" 
+                   style="font-size:12px;color:#4361ee;text-decoration:none;display:inline-block;margin-top:4px;">
+                   🔗 Open in Google Maps
+                </a>
+            `;
+					content.appendChild(mapDiv);
+				});
+			}
+		}
+
 		// ✅ 위치 설정 - 모바일/데스크톱 분기
 		const rect = chatbotWindow.getBoundingClientRect();
 
@@ -216,6 +258,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		// 3. [ITEM_DATA: ...] → 숨김
 		formatted = formatted.replace(/\[ITEM_DATA:\s*(.*?)\]/g, '<span class="item-data" style="display:none;" data-info="$1"></span>');
+		// ✅ [MAP: ...] → 숨김
+		formatted = formatted.replace(/\[MAP:\s*(.*?)\]/g, '<span class="map-data" style="display:none;" data-address="$1"></span>');
 
 		// 4. **bold**
 		formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
