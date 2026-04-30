@@ -1,8 +1,7 @@
-// chatbot.js 파일 내용 
+// chatbot.js
 
 // DOM이 로드된 후 실행
 document.addEventListener('DOMContentLoaded', function () {
-	// 요소 선택
 	const toggleBtn = document.getElementById('chatbotToggleBtn');
 	const closeBtn = document.getElementById('chatbotCloseBtn');
 	const chatbotWindow = document.getElementById('chatbotWindow');
@@ -11,61 +10,43 @@ document.addEventListener('DOMContentLoaded', function () {
 	const chatbotMessages = document.getElementById('chatbotMessages');
 	const quickBtns = document.querySelectorAll('.quick-btn');
 
-	// 대화 기록 저장소 (채팅창이 열려있는 동안만 유지)
 	let conversationMemory = [];
 
-	// 이미지 URL 설정
-	const aiAvatarUrl = 'mascot.png'; // AI 아이콘
-	const userAvatarUrl = 'https://cdn-icons-png.flaticon.com/512/847/847969.png'; // 사용자 아이콘
+	const aiAvatarUrl = 'mascot.png';
+	const userAvatarUrl = 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
 
 	if (window.innerWidth <= 600) {
 		chatbotWindow.classList.add('initial-position');
 	}
 
-	// 챗봇 토글 버튼 클릭 이벤트
 	toggleBtn.addEventListener('click', function () {
 		if (chatbotWindow.style.display === 'flex') {
 			chatbotWindow.style.display = 'none';
+			closeMediaPanel();
 		} else {
 			chatbotWindow.style.display = 'flex';
-			// 챗봇 열릴 때 입력창에 포커스
-			if (window.innerWidth > 600) {
-				chatbotInput.focus();
-			}
+			if (window.innerWidth > 600) chatbotInput.focus();
 		}
 	});
 
 	document.addEventListener('click', function (event) {
-		// 모바일 환경에서만 작동하도록 조건 추가
 		if (window.innerWidth <= 600) {
 			if (document.activeElement === chatbotInput &&
-				!chatbotInput.contains(event.target) && // 클릭 대상이 입력창 자체가 아니거나 그 안에 포함되지 않는다면
-				!chatbotWindow.contains(event.target) && // 클릭 대상이 챗봇 창 전체 안에 포함되지 않는다면 (완전 외부 클릭)
-				chatbotWindow.style.display === 'flex' // 챗봇 창이 현재 열려있는 상태여야 함
-			) {
+				!chatbotInput.contains(event.target) &&
+				!chatbotWindow.contains(event.target) &&
+				chatbotWindow.style.display === 'flex') {
 				chatbotInput.blur();
 			}
 		}
 	});
 
-	// 챗봇 닫기 버튼 클릭 이벤트
 	closeBtn.addEventListener('click', function () {
 		chatbotWindow.style.display = 'none';
+		closeMediaPanel();
 	});
 
-	// 빠른 질문 버튼 클릭 이벤트
-	quickBtns.forEach(btn => {
-		btn.addEventListener('click', function () {
-			const question = this.getAttribute('data-question');
-			chatbotInput.value = question;
-			sendMessageToBackend();
-		});
-	});
-
-	// 전송 버튼 클릭 이벤트
 	sendBtn.addEventListener('click', sendMessageToBackend);
 
-	// 엔터 키로 메시지 전송
 	chatbotInput.addEventListener('keypress', function (e) {
 		if (e.key === 'Enter' && !e.shiftKey) {
 			e.preventDefault();
@@ -73,494 +54,503 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 	});
 
-	// 모바일 키보드 열릴 때 레이아웃 조정
-	// JavaScript 수정본 (CSS와 완벽 호환)
-	let originalChatbotStyle = {};
-
-	// 제가 제안한 개선된 버전 핵심 부분
 	chatbotInput.addEventListener('focus', function () {
-		if (window.innerWidth <= 600) {
-			// 원래 스타일 저장
-			const computedStyle = window.getComputedStyle(chatbotWindow);
-
-			originalChatbotStyle = {
-				bottom: computedStyle.bottom,
-				height: computedStyle.height,
-				position: computedStyle.position
-			};
-
-			// 키보드 높이 동적 계산
-			const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-			const estimatedKeyboardHeight = isIOS ? 300 : 250;
-			const safeAreaBottom = 0;
-
-			// 챗봇 창 조정
-			chatbotWindow.style.position = 'fixed';
-			//chatbotWindow.style.bottom = `${estimatedKeyboardHeight + safeAreaBottom}px`;
-			//chatbotWindow.style.height = `calc(100dvh - ${estimatedKeyboardHeight + safeAreaBottom}px)`;
-
-			// 부드러운 전환
-			//chatbotWindow.style.transition = 'bottom 0.3s ease, height 0.3s ease';
-		}
+		if (window.innerWidth <= 600) chatbotWindow.style.position = 'fixed';
 	});
 
-	chatbotInput.addEventListener('blur', function () {
-		if (window.innerWidth <= 600) {
-			/*setTimeout(() => {
-				chatbotWindow.style.removeProperty('bottom');
-				chatbotWindow.style.removeProperty('height');
-				chatbotWindow.style.removeProperty('position'); // 필요하다면 이것도 제거
-				chatbotWindow.style.removeProperty('transition'); // focus에서 설정했던 transition도 제거
-			}, 200);*/
-		}
-	});
-
-
-	// 창 크기 변경 시 처리
 	window.addEventListener('resize', function () {
 		if (window.innerWidth > 600) {
-			// 데스크톱으로 돌아가면 모든 스타일 초기화
 			chatbotWindow.style.cssText = '';
 			chatbotWindow.classList.remove('initial-position');
 		} else {
-			// 모바일로 돌아가면 초기 위치 클래스 추가
 			if (!chatbotWindow.classList.contains('initial-position')) {
 				chatbotWindow.classList.add('initial-position');
 			}
 		}
 	});
 
-	function adjustScrollOnKeyboard() {
-		if (chatbotMessages) {
-			chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
-		}
-	}
+	// ================================================
+	// 유틸리티
+	// ================================================
 
-
-
-	// 현재 시간 포맷팅 함수
 	function getCurrentTime() {
-		const now = new Date();
-		return now.toLocaleTimeString('ko-KR', {
-			hour: '2-digit',
-			minute: '2-digit',
-			hour12: false
-		});
+		return new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
 	}
 
-	// 메시지 추가 함수 (아바타 포함)
-	function addMessage(text, sender) {
-		const messageContainer = document.createElement('div');
-		messageContainer.className = `message-container ${sender}-container`;
-
-		// AI 메시지일 때 왼쪽에 아바타
-		if (sender === 'bot') {
-			const avatarContainer = document.createElement('div');
-			avatarContainer.className = 'avatar-container';
-
-			const avatarImg = document.createElement('img');
-			avatarImg.src = aiAvatarUrl;
-			avatarImg.alt = 'AI Assistant';
-			avatarImg.className = 'avatar-img';
-
-			avatarContainer.appendChild(avatarImg);
-			messageContainer.appendChild(avatarContainer);
+	function extractImageUrls(text) {
+		const urls = [];
+		const mdRegex = /!\[.*?\]\((.*?)\)/g;
+		let match;
+		while ((match = mdRegex.exec(text)) !== null) urls.push(match[1]);
+		const urlRegex = /(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp))/gi;
+		while ((match = urlRegex.exec(text)) !== null) {
+			if (!urls.includes(match[0])) urls.push(match[0]);
 		}
-
-		// 메시지 콘텐츠 컨테이너
-		const messageContent = document.createElement('div');
-		messageContent.className = 'message-content-wrapper';
-
-		// 메시지 말풍선
-		const messageDiv = document.createElement('div');
-		messageDiv.className = `chatbot-message ${sender}-message`;
-		messageDiv.innerHTML = formatMarkdown(text);
-
-		messageContent.appendChild(messageDiv);
-
-		// 시간 표시
-		const timeStamp = document.createElement('div');
-		timeStamp.className = 'message-time';
-		timeStamp.textContent = getCurrentTime();
-		messageContent.appendChild(timeStamp);
-
-		messageContainer.appendChild(messageContent);
-
-		// 사용자 메시지일 때 오른쪽에 아바타
-		if (sender === 'user') {
-			const userAvatarContainer = document.createElement('div');
-			userAvatarContainer.className = 'avatar-container user-avatar';
-
-			const userAvatarImg = document.createElement('img');
-			userAvatarImg.src = userAvatarUrl;
-			userAvatarImg.alt = 'You';
-			userAvatarImg.className = 'avatar-img';
-
-			userAvatarContainer.appendChild(userAvatarImg);
-			messageContainer.appendChild(userAvatarContainer);
-		}
-
-		chatbotMessages.appendChild(messageContainer);
-
-		// 대화 기록 저장
-		conversationMemory.push({
-			role: sender === 'user' ? 'user' : 'assistant',
-			content: text,
-			timestamp: new Date().toISOString()
-		});
-
-		// 기록이 너무 길어지면 오래된 것 삭제
-		if (conversationMemory.length > 15) {
-			conversationMemory = conversationMemory.slice(-15);
-		}
-
-		chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+		return urls;
 	}
 
-	// 마크다운을 HTML로 변환하는 함수
+	function extractVideoUrls(text) {
+		const urls = [];
+		const mdRegex = /\[.*?\]\((.*?\.(mp4|mov|webm|avi))\)/gi;
+		let match;
+		while ((match = mdRegex.exec(text)) !== null) urls.push(match[1]);
+		const urlRegex = /(https?:\/\/[^\s]+\.(mp4|mov|webm|avi))/gi;
+		while ((match = urlRegex.exec(text)) !== null) {
+			if (!urls.includes(match[0])) urls.push(match[0]);
+		}
+		return urls;
+	}
+
+	function getVideoType(url) {
+		if (url.endsWith('.mp4')) return 'mp4';
+		if (url.endsWith('.mov')) return 'mov';
+		if (url.endsWith('.webm')) return 'webm';
+		if (url.endsWith('.avi')) return 'avi';
+		return 'mp4';
+	}
+
+	// ================================================
+	// 미디어 패널
+	// ================================================
+
+	function openMediaPanel(mediaItems, infoText, itemDataList) {
+		const panel = document.getElementById('mediaSlidePanel');
+		const content = document.getElementById('mediaPanelContent');
+		const chatbotWindow = document.getElementById('chatbotWindow');
+		const isMobile = window.innerWidth <= 600;
+
+		content.innerHTML = '';
+
+		mediaItems.forEach((item, index) => {
+			// 이미지/비디오 래퍼
+			const wrapper = document.createElement('div');
+			wrapper.className = 'media-item-wrapper';
+			wrapper.style.cssText = 'cursor:pointer;border-radius:12px;overflow:hidden;margin-bottom:12px;border:2px solid transparent;transition:border 0.2s;';
+			wrapper.onmouseenter = () => wrapper.style.borderColor = '#4361ee';
+			wrapper.onmouseleave = () => wrapper.style.borderColor = 'transparent';
+
+			if (item.type === 'image') {
+				const img = document.createElement('img');
+				img.src = item.url;
+				img.alt = item.title;
+				img.loading = 'lazy';
+				img.style.cssText = 'width:100%;border-radius:12px;';
+				img.onclick = () => openFullscreenViewer(item.url, 'image');
+				wrapper.appendChild(img);
+			} else if (item.type === 'video') {
+				const video = document.createElement('video');
+				video.controls = true;
+				video.preload = 'metadata';
+				video.style.cssText = 'width:100%;border-radius:12px;';
+				video.onclick = () => openFullscreenViewer(item.url, 'video');
+				const source = document.createElement('source');
+				source.src = item.url;
+				source.type = `video/${getVideoType(item.url)}`;
+				video.appendChild(source);
+				wrapper.appendChild(video);
+			}
+			content.appendChild(wrapper);
+
+			// ✅ 해당 미디어의 ITEM_DATA 표시
+			if (itemDataList && itemDataList[index]) {
+				const data = itemDataList[index];
+				const infoDiv = document.createElement('div');
+				infoDiv.className = 'media-info-section';
+				infoDiv.style.cssText = 'margin-top:0;margin-bottom:16px;padding:12px;background:#f8f9fa;border-radius:10px;font-size:13px;line-height:1.5;color:#333;';
+				infoDiv.innerHTML = `
+                <div style="font-weight:600;font-size:14px;margin-bottom:4px;">${data.title || 'Item ' + (index + 1)}</div>
+                ${data.description ? `<div style="color:#666;margin-bottom:4px;">${data.description}</div>` : ''}
+                ${data.rating ? `<div style="color:#f59e0b;">⭐ ${data.rating}</div>` : ''}
+                ${data.extra ? `<div style="color:#888;font-size:12px;">${data.extra}</div>` : ''}
+            `;
+				content.appendChild(infoDiv);
+			}
+		});
+
+		// ✅ 위치 설정 - 모바일/데스크톱 분기
+		const rect = chatbotWindow.getBoundingClientRect();
+
+		if (isMobile) {
+			// 모바일: 전체 화면 오버레이
+			panel.style.top = '10px';
+			panel.style.left = '10px';
+			panel.style.right = '10px';
+			panel.style.bottom = '20px';
+			panel.style.width = 'auto';
+			panel.style.maxHeight = 'none';
+			panel.style.borderRadius = '20px';
+			panel.style.zIndex = '10001';
+		} else {
+			// 데스크톱: 챗봇 왼쪽에 패널
+			panel.style.top = rect.top + 'px';
+			panel.style.left = (rect.left - 385) + 'px';
+			panel.style.right = 'auto';
+			panel.style.bottom = 'auto';
+			panel.style.width = '370px';
+			panel.style.maxHeight = rect.height + 'px';
+			panel.style.borderRadius = '16px';
+		}
+
+		panel.style.display = 'flex';
+	}
+
+	function closeMediaPanel() {
+		const panel = document.getElementById('mediaSlidePanel');
+		if (panel) panel.style.display = 'none';
+	}
+
+	// ================================================
+	// 마크다운 변환
+	// ================================================
+
 	function formatMarkdown(text) {
 		if (!text) return '';
 
-		// **bold** -> <strong>bold</strong>
-		let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+		let formatted = text;
 
-		// *italic* -> <em>italic</em>
+		// 1. 이미지 마크다운 → 아이콘
+		formatted = formatted.replace(/!\[(.*?)\]\(.*?\)/g, '<span style="font-size:12px;color:#888;">📷 <em>$1</em></span>');
+
+		// 2. 비디오 링크 → 아이콘
+		formatted = formatted.replace(/\[(.*?)\]\(.*?\.(mp4|mov|webm|avi)\)/gi, '<span style="font-size:12px;color:#888;">🎬 <em>$1</em></span>');
+
+		// 3. [ITEM_DATA: ...] → 숨김
+		formatted = formatted.replace(/\[ITEM_DATA:\s*(.*?)\]/g, '<span class="item-data" style="display:none;" data-info="$1"></span>');
+
+		// 4. **bold**
+		formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+		// 5. *italic*
 		formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
 
-		// ## Heading -> <h3>Heading</h3>
-		formatted = formatted.replace(/## (.*?)(\n|$)/g, '<h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">$1</h3>');
+		// 6. ## heading
+		formatted = formatted.replace(/## (.*?)(\n|$)/g, '<h3 style="margin:0 0 8px;font-size:16px;font-weight:600;">$1</h3>');
 
-		// # Heading -> <h2>Heading</h2>
-		formatted = formatted.replace(/# (.*?)(\n|$)/g, '<h2 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 600;">$1</h2>');
+		// 7. # heading
+		formatted = formatted.replace(/# (.*?)(\n|$)/g, '<h2 style="margin:0 0 10px;font-size:18px;font-weight:600;">$1</h2>');
 
-		// - list item -> <li>list item</li>
-		formatted = formatted.replace(/^- (.*?)(\n|$)/gm, '<li style="margin-left: 15px; margin-bottom: 4px;">$1</li>');
+		// 8. list
+		formatted = formatted.replace(/^- (.*?)(\n|$)/gm, '<li style="margin-left:15px;margin-bottom:4px;">$1</li>');
+		formatted = formatted.replace(/^(\d+)\. (.*?)(\n|$)/gm, '<li style="margin-left:15px;margin-bottom:4px;">$2</li>');
 
-		// 숫자. list item -> <li>list item</li>
-		formatted = formatted.replace(/^(\d+)\. (.*?)(\n|$)/gm, '<li style="margin-left: 15px; margin-bottom: 4px;">$2</li>');
-
-		// 줄바꿈 처리
+		// 9. 줄바꿈
 		formatted = formatted.replace(/\n\n/g, '<br><br>');
 		formatted = formatted.replace(/\n/g, '<br>');
 
-		// <li> 태그가 있으면 <ul>로 감싸기
+		// 10. <li> 감싸기
 		if (formatted.includes('<li>')) {
-			formatted = '<ul style="margin: 8px 0; padding-left: 20px;">' + formatted + '</ul>';
+			formatted = '<ul style="margin:8px 0;padding-left:20px;">' + formatted + '</ul>';
 		}
 
 		return formatted;
 	}
 
+	// ================================================
+	// 메시지 추가
+	// ================================================
 
-	// 메시지 전송 함수
+	function addMessage(text, sender) {
+		console.log('📩 addMessage called, sender:', sender, 'text length:', text?.length);
+		const container = document.createElement('div');
+		container.className = `message-container ${sender}-container`;
+
+		if (sender === 'bot') {
+			const av = document.createElement('div');
+			av.className = 'avatar-container';
+			const img = document.createElement('img');
+			img.src = aiAvatarUrl;
+			img.alt = 'AI';
+			img.className = 'avatar-img';
+			av.appendChild(img);
+			container.appendChild(av);
+		}
+
+		const content = document.createElement('div');
+		content.className = 'message-content-wrapper';
+
+		const bubble = document.createElement('div');
+		bubble.className = `chatbot-message ${sender}-message`;
+		bubble.innerHTML = formatMarkdown(text);
+		content.appendChild(bubble);
+
+		const time = document.createElement('div');
+		time.className = 'message-time';
+		time.textContent = getCurrentTime();
+		content.appendChild(time);
+
+		// ✅ 미디어 패널 + 다시 열기 버튼 (time 아래에)
+		if (sender === 'bot') {
+			const images = extractImageUrls(text);
+			const videos = extractVideoUrls(text);
+			const items = [
+				...images.map(u => ({ type: 'image', url: u, title: 'Photo' })),
+				...videos.map(u => ({ type: 'video', url: u, title: 'Video' }))
+			];
+			console.log('🔍 images found:', images.length, images);
+			console.log('🔍 videos found:', videos.length, videos);
+			console.log('🔍 items total:', items.length);
+
+			const itemDataMatches = text.match(/\[ITEM_DATA:\s*(.*?)\]/g);
+			let itemDataList = [];
+			if (itemDataMatches) {
+				itemDataList = itemDataMatches.map(m => {
+					const parts = m.replace(/\[ITEM_DATA:\s*|\]/g, '').split('|').map(s => s.trim());
+					return { title: parts[0] || '', description: parts[1] || '', rating: parts[2] || '', extra: parts.slice(3).join(' | ') };
+				});
+			}
+
+			if (items.length > 0) {
+				openMediaPanel(items, text, itemDataList);
+
+				const reopenBtn = document.createElement('button');
+				reopenBtn.className = 'media-preview-btn';
+				reopenBtn.textContent = '📷 View Attached Media';
+				reopenBtn.style.cssText = 'background:#f0f4ff;border:1px solid #4361ee;color:#4361ee;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px;margin-top:4px;';
+				reopenBtn.onclick = () => {
+					const panel = document.getElementById('mediaSlidePanel');
+					if (panel.style.display === 'none') {
+						openMediaPanel(items, text, itemDataList);
+					}
+				};
+				content.appendChild(reopenBtn);
+			}
+		}
+
+		container.appendChild(content);
+
+		if (sender === 'user') {
+			const ua = document.createElement('div');
+			ua.className = 'avatar-container user-avatar';
+			const ui = document.createElement('img');
+			ui.src = userAvatarUrl;
+			ui.alt = 'You';
+			ui.className = 'avatar-img';
+			ua.appendChild(ui);
+			container.appendChild(ua);
+		}
+
+		chatbotMessages.appendChild(container);
+		conversationMemory.push({ role: sender === 'user' ? 'user' : 'assistant', content: text, timestamp: new Date().toISOString() });
+		if (conversationMemory.length > 15) conversationMemory = conversationMemory.slice(-15);
+		chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+	}
+
+	// ================================================
+	// 메시지 전송
+	// ================================================
+
 	async function sendMessageToBackend() {
 		const message = chatbotInput.value.trim();
-		if (message === '') return;
+		if (!message) return;
 
 		addMessage(message, 'user');
 		chatbotInput.value = '';
 
-		// 로딩 표시 추가 (아바타 포함)
-		const loadingContainer = document.createElement('div');
-		loadingContainer.className = 'message-container bot-container';
-
-		// AI 아바타
-		const loadingAvatar = document.createElement('div');
-		loadingAvatar.className = 'avatar-container';
-
-		const loadingAvatarImg = document.createElement('img');
-		loadingAvatarImg.src = aiAvatarUrl;
-		loadingAvatarImg.alt = 'AI Assistant';
-		loadingAvatarImg.className = 'avatar-img';
-
-		loadingAvatar.appendChild(loadingAvatarImg);
-		loadingContainer.appendChild(loadingAvatar);
-
-		// 로딩 메시지
-		const loadingContent = document.createElement('div');
-		loadingContent.className = 'message-content-wrapper';
-
-		const loadingDiv = document.createElement('div');
-		loadingDiv.className = 'chatbot-message bot-message loading-message';
-		loadingDiv.innerHTML = `
-    <div class="wave-dots">
-        <div class="wave-dot"></div>
-        <div class="wave-dot"></div>
-        <div class="wave-dot"></div>
-    </div>
-`;
-
-		loadingContent.appendChild(loadingDiv);
-		loadingContainer.appendChild(loadingContent);
-
-		chatbotMessages.appendChild(loadingContainer);
+		// 로딩
+		const loadContainer = document.createElement('div');
+		loadContainer.className = 'message-container bot-container';
+		const loadAvatar = document.createElement('div');
+		loadAvatar.className = 'avatar-container';
+		const lai = document.createElement('img');
+		lai.src = aiAvatarUrl;
+		lai.alt = 'AI';
+		lai.className = 'avatar-img';
+		loadAvatar.appendChild(lai);
+		loadContainer.appendChild(loadAvatar);
+		const loadContent = document.createElement('div');
+		loadContent.className = 'message-content-wrapper';
+		const loadDiv = document.createElement('div');
+		loadDiv.className = 'chatbot-message bot-message loading-message';
+		loadDiv.innerHTML = '<div class="wave-dots"><div class="wave-dot"></div><div class="wave-dot"></div><div class="wave-dot"></div></div>';
+		loadContent.appendChild(loadDiv);
+		loadContainer.appendChild(loadContent);
+		chatbotMessages.appendChild(loadContainer);
 		chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 
-		// POST 요청 데이터 구성
 		const requestData = {
 			message: message,
+			school_id: "2ZQLb1N7bafnESAPXauOIL2y0m03",
 			user_id: "anonymous",
 			history: conversationMemory.slice(-10)
 		};
 
 		try {
-			console.log('📤 POST 요청 전송:', requestData);
-
-			const response = await fetch('https://us-central1-schooldemo-1701f.cloudfunctions.net/campbellhall_chat_stream', {
+			const response = await fetch('https://chat-stream-gmq4inexiq-uc.a.run.app/chat_stream', {
 				method: 'POST',
-				mode: 'cors',  // ✅ CORS 모드 명시
-				credentials: 'omit',  // ✅ credentials 설정
-				headers: {
-					'Content-Type': 'application/json',
-				},
+				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(requestData)
 			});
 
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
+			if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
+			loadContainer.remove();
 
-			// 로딩 표시 제거
-			loadingContainer.remove();
+			const respContainer = document.createElement('div');
+			respContainer.className = 'message-container bot-container';
+			const respAvatar = document.createElement('div');
+			respAvatar.className = 'avatar-container';
+			const rai = document.createElement('img');
+			rai.src = aiAvatarUrl;
+			rai.alt = 'AI';
+			rai.className = 'avatar-img';
+			respAvatar.appendChild(rai);
+			respContainer.appendChild(respAvatar);
 
-			// 실제 응답 메시지 컨테이너 생성
-			const responseContainer = document.createElement('div');
-			responseContainer.className = 'message-container bot-container';
+			const respContent = document.createElement('div');
+			respContent.className = 'message-content-wrapper';
+			const respDiv = document.createElement('div');
+			respDiv.className = 'chatbot-message bot-message';
+			respContent.appendChild(respDiv);
+			const respTime = document.createElement('div');
+			respTime.className = 'message-time';
+			respTime.textContent = getCurrentTime();
+			respContent.appendChild(respTime);
+			respContainer.appendChild(respContent);
+			chatbotMessages.appendChild(respContainer);
 
-			// AI 아바타
-			const responseAvatar = document.createElement('div');
-			responseAvatar.className = 'avatar-container';
-
-			const responseAvatarImg = document.createElement('img');
-			responseAvatarImg.src = aiAvatarUrl;
-			responseAvatarImg.alt = 'AI Assistant';
-			responseAvatarImg.className = 'avatar-img';
-
-			responseAvatar.appendChild(responseAvatarImg);
-			responseContainer.appendChild(responseAvatar);
-
-			// 응답 메시지
-			const responseContent = document.createElement('div');
-			responseContent.className = 'message-content-wrapper';
-
-			const responseDiv = document.createElement('div');
-			responseDiv.className = 'chatbot-message bot-message';
-			responseDiv.id = 'streamingResponse'; 
-			responseContent.appendChild(responseDiv);
-
-			// 시간 표시
-			const responseTime = document.createElement('div');
-			responseTime.className = 'message-time';
-			responseTime.textContent = getCurrentTime();
-			responseContent.appendChild(responseTime);
-
-			responseContainer.appendChild(responseContent);
-			chatbotMessages.appendChild(responseContainer);
-
-			// ReadableStream으로 SSE 응답 처리
 			const reader = response.body.getReader();
 			const decoder = new TextDecoder();
-			let buffer = '';
-			let fullResponse = '';
+			let buffer = '', fullResponse = '';
 
 			while (true) {
 				const { done, value } = await reader.read();
 				if (done) {
-					console.log('✅ 스트리밍 완료');
+					// ✅ 스트리밍 중 보여준 응답 제거
+					respContainer.remove();
+					// ✅ addMessage로 bot 응답 추가 (패널, 버튼 자동 처리)
+					addMessage(fullResponse, 'bot');
 
-					// 대화 기록 저장
-					conversationMemory.push({
-						role: 'assistant',
-						content: fullResponse,
-						timestamp: new Date().toISOString()
-					});
-
-					if (conversationMemory.length > 15) {
-						conversationMemory = conversationMemory.slice(-15);
-					}
-
-					if (window.innerWidth > 600) {
-						chatbotInput.focus();
-					}
+					if (window.innerWidth > 600) chatbotInput.focus();
 					break;
 				}
-
 				buffer += decoder.decode(value, { stream: true });
 				const lines = buffer.split('\n');
 				buffer = lines.pop() || '';
-
 				for (const line of lines) {
-					if (line.trim() === '') continue;
-
-					if (line.startsWith('data: ')) {
-						try {
-							const data = JSON.parse(line.substring(6));
-
-							if (data.type === 'chunk' && data.content) {
-								fullResponse += data.content;
-								responseDiv.innerHTML = formatMarkdown(fullResponse);
-								chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
-							}
-							else if (data.type === 'complete') {
-								console.log('✅ Receive a completion signal from the server');
-							}
-							else if (data.type === 'error') {
-								console.error('❌ Server error:', data.content);
-								responseDiv.textContent = `Error: ${data.content}`;
-								reader.cancel();
-								return;
-							}
-						} catch (e) {
-							console.error('❌ JSON parsing error:', e, 'Line:', line);
+					if (!line.trim() || !line.startsWith('data: ')) continue;
+					try {
+						const d = JSON.parse(line.substring(6));
+						if (d.type === 'chunk' && d.content) {
+							fullResponse += d.content;
+							respDiv.innerHTML = formatMarkdown(fullResponse);
+							chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+						} else if (d.type === 'error') {
+							respDiv.textContent = `Error: ${d.content}`;
+							reader.cancel();
+							return;
 						}
-					}
+					} catch (e) { /* parse error */ }
 				}
 			}
-
 		} catch (error) {
-			console.error('❌ Fetch error:', error);
-
-			// 에러 발생 시 로딩 표시 제거
-			if (document.getElementById('loadingIndicator')) {
-				loadingContainer.remove();
-			}
-
-			// 에러 메시지 표시 (아바타 포함)
-			const errorContainer = document.createElement('div');
-			errorContainer.className = 'message-container bot-container';
-
-			const errorAvatar = document.createElement('div');
-			errorAvatar.className = 'avatar-container';
-
-			const errorAvatarImg = document.createElement('img');
-			errorAvatarImg.src = aiAvatarUrl;
-			errorAvatarImg.alt = 'AI Assistant';
-			errorAvatarImg.className = 'avatar-img';
-
-			errorAvatar.appendChild(errorAvatarImg);
-			errorContainer.appendChild(errorAvatar);
-
-			const errorContent = document.createElement('div');
-			errorContent.className = 'message-content-wrapper';
-
-			const errorDiv = document.createElement('div');
-			errorDiv.className = 'chatbot-message bot-message error-message';
-			errorDiv.textContent = 'A connection error has occurred, please try again.';
-
-			errorContent.appendChild(errorDiv);
-
-			// 에러 시간 표시
-			const errorTime = document.createElement('div');
-			errorTime.className = 'message-time';
-			errorTime.textContent = getCurrentTime();
-			errorContent.appendChild(errorTime);
-
-			errorContainer.appendChild(errorContent);
-			chatbotMessages.appendChild(errorContainer);
-
+			console.error('Fetch error:', error);
+			loadContainer.remove();
+			const errContainer = document.createElement('div');
+			errContainer.className = 'message-container bot-container';
+			const errAvatar = document.createElement('div');
+			errAvatar.className = 'avatar-container';
+			const eai = document.createElement('img');
+			eai.src = aiAvatarUrl;
+			eai.alt = 'AI';
+			eai.className = 'avatar-img';
+			errAvatar.appendChild(eai);
+			errContainer.appendChild(errAvatar);
+			const errContent = document.createElement('div');
+			errContent.className = 'message-content-wrapper';
+			const errDiv = document.createElement('div');
+			errDiv.className = 'chatbot-message bot-message error-message';
+			errDiv.textContent = 'A connection error has occurred, please try again.';
+			errContent.appendChild(errDiv);
+			errContainer.appendChild(errContent);
+			chatbotMessages.appendChild(errContainer);
 			chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 		}
 
-		if (window.innerWidth <= 600) {
-			chatbotInput.blur();
-		} else {
-			// 입력창에 포커스
-			chatbotInput.focus();
-		}
+		if (window.innerWidth <= 600) chatbotInput.blur();
+		else chatbotInput.focus();
 	}
 
+	// ================================================
+	// 웰컴 메시지
+	// ================================================
+
 	function showWelcomeMessage() {
-		// 일반 메시지와 동일한 구조로 생성
-		const welcomeContainer = document.createElement('div');
-		welcomeContainer.className = 'message-container bot-container';
-
-		// AI 아바타 (일반 메시지와 동일)
-		const avatarContainer = document.createElement('div');
-		avatarContainer.className = 'avatar-container';
-
-		const avatarImg = document.createElement('img');
-		avatarImg.src = aiAvatarUrl;
-		avatarImg.alt = 'AI Assistant';
-		avatarImg.className = 'avatar-img';
-
-		avatarContainer.appendChild(avatarImg);
-		welcomeContainer.appendChild(avatarContainer);
-
-		// 메시지 콘텐츠 컨테이너 (일반 메시지와 동일)
-		const messageContent = document.createElement('div');
-		messageContent.className = 'message-content-wrapper';
-
-		// 웰컴 메시지 말풍선
-		const welcomeDiv = document.createElement('div');
-		welcomeDiv.className = 'chatbot-message bot-message';
-
-		const welcomeText = 'Welcome to **Campbell Hall**. I\'m your **AI assistant**. What can I help you with today?';
-		welcomeDiv.innerHTML = formatMarkdown(welcomeText);
-
-		messageContent.appendChild(welcomeDiv);
-
-		// 시간 표시 (일반 메시지와 동일)
-		const timeStamp = document.createElement('div');
-		timeStamp.className = 'message-time';
-		timeStamp.textContent = getCurrentTime();
-		messageContent.appendChild(timeStamp);
-
-		welcomeContainer.appendChild(messageContent);
-		chatbotMessages.appendChild(welcomeContainer);
-
-		// 빠른 질문 버튼 컨테이너 추가
+		const wc = document.createElement('div');
+		wc.className = 'message-container bot-container';
+		const wa = document.createElement('div');
+		wa.className = 'avatar-container';
+		const wi = document.createElement('img');
+		wi.src = aiAvatarUrl;
+		wi.alt = 'AI';
+		wi.className = 'avatar-img';
+		wa.appendChild(wi);
+		wc.appendChild(wa);
+		const wm = document.createElement('div');
+		wm.className = 'message-content-wrapper';
+		const wb = document.createElement('div');
+		wb.className = 'chatbot-message bot-message';
+		wb.innerHTML = formatMarkdown("Welcome to **Campbell Hall**. I'm your **Campbell Hall AI assistant**. What can I help you with today?");
+		wm.appendChild(wb);
+		const wt = document.createElement('div');
+		wt.className = 'message-time';
+		wt.textContent = getCurrentTime();
+		wm.appendChild(wt);
+		wc.appendChild(wm);
+		chatbotMessages.appendChild(wc);
 		showQuickQuestions();
-
 		chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 	}
 
-
-	// 빠른 질문 버튼 표시 함수
 	function showQuickQuestions() {
-		const quickQuestionsDiv = document.createElement('div');
-		quickQuestionsDiv.className = 'quick-questions';
-
-		quickQuestionsDiv.innerHTML = `
-        <div class="quick-questions-title">Quick questions:</div>
-        <button class="quick-btn" data-question="Can you tell me how I can get to Campbell Hall?">
-            🚗 How to get to Campbell Hall
-        </button>
-        <button class="quick-btn" data-question="What is the application process? What documents do I need to complete and submit, and what is the deadline?">
-            📝 Application Process
-        </button>
-        <button class="quick-btn" data-question="What are the key school events taking place this month?">
-            📅 Events
-        </button>
-        <button class="quick-btn" data-question="What facilities does Campbell Hall have?">
-            🏫 School Facilities
-        </button>
-    `;
-
-		chatbotMessages.appendChild(quickQuestionsDiv);
-
-		// 빠른 질문 버튼 이벤트 리스너 추가
-		const quickBtns = quickQuestionsDiv.querySelectorAll('.quick-btn');
-		quickBtns.forEach(btn => {
+		const qq = document.createElement('div');
+		qq.className = 'quick-questions';
+		qq.innerHTML = `
+			<div class="quick-questions-title">Quick questions:</div>
+			<button class="quick-btn" data-question="Can you tell me how I can get to Campbell Hall?">🚗 How to get to Campbell Hall</button>
+			<button class="quick-btn" data-question="What is the application process? What documents do I need to complete and submit, and what is the deadline?">📝 Application Process</button>
+			<button class="quick-btn" data-question="What are the key school events taking place this month?">📅 Events</button>
+			<button class="quick-btn" data-question="What facilities does Campbell Hall have?">🏫 School Facilities</button>`;
+		chatbotMessages.appendChild(qq);
+		qq.querySelectorAll('.quick-btn').forEach(btn => {
 			btn.addEventListener('click', function () {
-				const question = this.getAttribute('data-question');
-				chatbotInput.value = question;
+				chatbotInput.value = this.getAttribute('data-question');
 				sendMessageToBackend();
 			});
 		});
-
 		chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 	}
 
-	// 초기화: 챗봇 창을 숨김 상태로 시작
 	chatbotWindow.style.display = 'none';
-
-	// 초기 환영 메시지 (선택사항)
-	setTimeout(() => {
-		showWelcomeMessage();
-	}, 1000);
-
-
+	setTimeout(showWelcomeMessage, 1000);
 });
 
+// 전역 함수로 등록 (HTML onclick에서 호출 가능하게)
+function closeMediaPanel() {
+	const panel = document.getElementById('mediaSlidePanel');
+	if (panel) {
+		panel.style.display = 'none';
+	}
+}
 
+// 전역: 전체화면 뷰어
+function openFullscreenViewer(src, type) {
+	const overlay = document.createElement('div');
+	overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+	overlay.onclick = () => overlay.remove();
+
+	if (type === 'image') {
+		const img = document.createElement('img');
+		img.src = src;
+		img.style.cssText = 'max-width:95vw;max-height:95vh;object-fit:contain;';
+		overlay.appendChild(img);
+	} else {
+		const video = document.createElement('video');
+		video.src = src;
+		video.controls = true;
+		video.autoplay = true;
+		video.style.cssText = 'max-width:95vw;max-height:95vh;';
+		video.onclick = (e) => e.stopPropagation();
+		overlay.appendChild(video);
+	}
+	document.body.appendChild(overlay);
+}
