@@ -463,7 +463,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		container.appendChild(content);
 
-		// ✅ 음성 읽기 (bot 메시지, voiceMode가 true일 때만)
+		// ✅ "다시 듣기" 버튼만 남김
 		if (sender === 'bot') {
 			const cleanText = text
 				.replace(/\[MAP:.*?\]/g, '')
@@ -472,38 +472,16 @@ document.addEventListener('DOMContentLoaded', function () {
 				.replace(/[*#]/g, '')
 				.replace(/<[^>]*>/g, '');
 
-			if (voiceMode) {
-				const utterance = new SpeechSynthesisUtterance(cleanText);
-
-				// ✅ 언어 자동 감지 (한국어, 일본어, 중국어 등)
-				const langMap = {
-					ko: /[가-힣]/.test(cleanText),
-					ja: /[\u3040-\u309F\u30A0-\u30FF]/.test(cleanText),
-					zh: /[\u4E00-\u9FFF]/.test(cleanText),
-					es: /[áéíóúñÁÉÍÓÚÑ]/.test(cleanText)
-				};
-
-				if (langMap.ko) utterance.lang = 'ko-KR';
-				else if (langMap.ja) utterance.lang = 'ja-JP';
-				else if (langMap.zh) utterance.lang = 'zh-CN';
-				else utterance.lang = 'en-US';  // 기본값 영어
-
-				utterance.rate = 1.0;
-				speechSynthesis.cancel();
-				speechSynthesis.speak(utterance);
-			}
-
-			// 다시 듣기 버튼
 			const speakBtn = document.createElement('button');
 			speakBtn.textContent = '🔊 Listen again';
 			speakBtn.title = 'Listen to response again';
 			speakBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;margin-top:2px;color:#4361ee;';
 			speakBtn.onclick = () => {
 				speechSynthesis.cancel();
-				const newUtterance = new SpeechSynthesisUtterance(cleanText);
-				newUtterance.lang = 'en-US';
-				newUtterance.rate = 1.0;
-				speechSynthesis.speak(newUtterance);
+				const utterance = new SpeechSynthesisUtterance(cleanText);
+				utterance.lang = /[가-힣]/.test(cleanText) ? 'ko-KR' : 'en-US';
+				utterance.rate = 1.0;
+				speechSynthesis.speak(utterance);
 			};
 			content.appendChild(speakBtn);
 		}
@@ -601,6 +579,9 @@ document.addEventListener('DOMContentLoaded', function () {
 			const reader = response.body.getReader();
 			const decoder = new TextDecoder();
 			let buffer = '', fullResponse = '';
+			// 스트리밍 중 음성 읽기를 위한 변수
+			let voiceQueue = '';
+			let voiceTimeout = null;
 
 			while (true) {
 				const { done, value } = await reader.read();
@@ -624,6 +605,30 @@ document.addEventListener('DOMContentLoaded', function () {
 							fullResponse += d.content;
 							respDiv.innerHTML = formatMarkdown(fullResponse);
 							chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+							// ✅ 문장 단위로 실시간 음성 읽기
+							if (voiceMode) {
+								voiceQueue += d.content;
+
+								// 문장 종료 문자(. ! ? \n)가 나오면 읽기
+								if (/[.!?\n]$/.test(voiceQueue) && voiceQueue.trim().length > 10) {
+									clearTimeout(voiceTimeout);
+									const textToSpeak = voiceQueue
+										.replace(/\[MAP:.*?\]/g, '')
+										.replace(/\[ITEM_DATA:.*?\]/g, '')
+										.replace(/!\[.*?\]\(.*?\)/g, '')
+										.replace(/[*#]/g, '')
+										.trim();
+
+									if (textToSpeak.length > 5) {
+										const utterance = new SpeechSynthesisUtterance(textToSpeak);
+										utterance.lang = /[가-힣]/.test(textToSpeak) ? 'ko-KR' : 'en-US';
+										utterance.rate = 1.1;
+										speechSynthesis.speak(utterance);
+									}
+									voiceQueue = '';
+								}
+							}
 						} else if (d.type === 'error') {
 							respDiv.textContent = `Error: ${d.content}`;
 							reader.cancel();
