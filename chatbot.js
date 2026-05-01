@@ -66,6 +66,8 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	voiceBtn?.addEventListener('click', () => {
+		speechSynthesis.cancel();
+
 		if (!recognition) {
 			alert('Speech recognition is not supported in your browser.');
 			return;
@@ -116,6 +118,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	});
 
 	closeBtn.addEventListener('click', function () {
+		speechSynthesis.cancel();
 		chatbotWindow.style.display = 'none';
 		closeMediaPanel();
 	});
@@ -125,6 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	chatbotInput.addEventListener('keypress', function (e) {
 		if (e.key === 'Enter' && !e.shiftKey) {
 			e.preventDefault();
+			speechSynthesis.cancel();
 			sendMessageToBackend();
 		}
 	});
@@ -508,6 +512,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	// ================================================
 
 	async function sendMessageToBackend() {
+		speechSynthesis.cancel();
 		const message = chatbotInput.value.trim();
 		if (!message) return;
 
