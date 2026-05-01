@@ -15,6 +15,81 @@ document.addEventListener('DOMContentLoaded', function () {
 	const aiAvatarUrl = 'mascot.png';
 	const userAvatarUrl = 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
 
+	const voiceBtn = document.getElementById('voiceInputBtn');
+
+	// ✅ 음성 모드 상태
+	let voiceMode = false;
+	const voiceModeBtn = document.getElementById('voiceModeBtn');
+
+	// 음성 모드 토글
+	voiceModeBtn?.addEventListener('click', () => {
+		voiceMode = !voiceMode;
+		if (voiceMode) {
+			voiceModeBtn.style.background = '#4cc9f0';
+			voiceModeBtn.title = 'Voice Mode ON';
+			voiceModeBtn.textContent = '🔊';
+		} else {
+			voiceModeBtn.style.background = 'rgba(255,255,255,0.2)';
+			voiceModeBtn.title = 'Voice Mode OFF';
+			voiceModeBtn.textContent = '🔇';
+			speechSynthesis.cancel();  // 음성 즉시 중지
+		}
+	});
+
+	// 음성 인식 설정
+	const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+	let recognition = null;
+	let isListening = false;
+
+	if (SpeechRecognition) {
+		recognition = new SpeechRecognition();
+		recognition.lang = 'en-US';
+		recognition.interimResults = false;
+
+		recognition.onresult = (event) => {
+			const transcript = event.results[0][0].transcript;
+			chatbotInput.value = transcript;
+			voiceBtn.textContent = '🎤';
+			isListening = false;
+			sendMessageToBackend();
+		};
+
+		recognition.onerror = () => {
+			voiceBtn.textContent = '🎤';
+			isListening = false;
+		};
+
+		recognition.onend = () => {
+			voiceBtn.textContent = '🎤';
+			isListening = false;
+		};
+	}
+
+	voiceBtn?.addEventListener('click', () => {
+		if (!recognition) {
+			alert('Speech recognition is not supported in your browser.');
+			return;
+		}
+
+		// ✅ 음성 모드 자동 활성화
+		if (!voiceMode) {
+			voiceMode = true;
+			voiceModeBtn.style.background = '#4cc9f0';
+			voiceModeBtn.title = 'Voice Mode ON';
+			voiceModeBtn.textContent = '🔊';
+		}
+
+		if (isListening) {
+			recognition.stop();
+			voiceBtn.textContent = '🎤';
+			isListening = false;
+		} else {
+			recognition.start();
+			voiceBtn.textContent = '🔴';
+			isListening = true;
+		}
+	});
+
 	if (window.innerWidth <= 600) {
 		chatbotWindow.classList.add('initial-position');
 	}
@@ -386,6 +461,39 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 
 		container.appendChild(content);
+
+		// ✅ 음성 읽기 (bot 메시지, voiceMode가 true일 때만)
+		if (sender === 'bot') {
+			const cleanText = text
+				.replace(/\[MAP:.*?\]/g, '')
+				.replace(/\[ITEM_DATA:.*?\]/g, '')
+				.replace(/!\[.*?\]\(.*?\)/g, '')
+				.replace(/[*#]/g, '')
+				.replace(/<[^>]*>/g, '');
+
+			if (voiceMode) {
+				// 자동 읽기
+				const utterance = new SpeechSynthesisUtterance(cleanText);
+				utterance.lang = 'en-US';
+				utterance.rate = 1.0;
+				speechSynthesis.cancel();
+				speechSynthesis.speak(utterance);
+			}
+
+			// 다시 듣기 버튼
+			const speakBtn = document.createElement('button');
+			speakBtn.textContent = '🔊 Listen again';
+			speakBtn.title = 'Listen to response again';
+			speakBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;margin-top:2px;color:#4361ee;';
+			speakBtn.onclick = () => {
+				speechSynthesis.cancel();
+				const newUtterance = new SpeechSynthesisUtterance(cleanText);
+				newUtterance.lang = 'en-US';
+				newUtterance.rate = 1.0;
+				speechSynthesis.speak(newUtterance);
+			};
+			content.appendChild(speakBtn);
+		}
 
 		if (sender === 'user') {
 			const ua = document.createElement('div');
