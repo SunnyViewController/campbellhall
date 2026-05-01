@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	if (SpeechRecognition) {
 		recognition = new SpeechRecognition();
-		recognition.lang = 'en-US';
+		recognition.lang = '';  // ✅ 빈 문자열 = 자동 감지
 		recognition.interimResults = false;
 
 		recognition.onresult = (event) => {
@@ -202,6 +202,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	function openMediaPanel(mediaItems, infoText, itemDataList) {
 		const panel = document.getElementById('mediaSlidePanel');
 		const content = document.getElementById('mediaPanelContent');
+		const panelTitle = document.getElementById('panelTitle');
 		const chatbotWindow = document.getElementById('chatbotWindow');
 		const isMobile = window.innerWidth <= 600;
 
@@ -472,9 +473,21 @@ document.addEventListener('DOMContentLoaded', function () {
 				.replace(/<[^>]*>/g, '');
 
 			if (voiceMode) {
-				// 자동 읽기
 				const utterance = new SpeechSynthesisUtterance(cleanText);
-				utterance.lang = 'en-US';
+
+				// ✅ 언어 자동 감지 (한국어, 일본어, 중국어 등)
+				const langMap = {
+					ko: /[가-힣]/.test(cleanText),
+					ja: /[\u3040-\u309F\u30A0-\u30FF]/.test(cleanText),
+					zh: /[\u4E00-\u9FFF]/.test(cleanText),
+					es: /[áéíóúñÁÉÍÓÚÑ]/.test(cleanText)
+				};
+
+				if (langMap.ko) utterance.lang = 'ko-KR';
+				else if (langMap.ja) utterance.lang = 'ja-JP';
+				else if (langMap.zh) utterance.lang = 'zh-CN';
+				else utterance.lang = 'en-US';  // 기본값 영어
+
 				utterance.rate = 1.0;
 				speechSynthesis.cancel();
 				speechSynthesis.speak(utterance);
