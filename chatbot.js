@@ -166,10 +166,17 @@ document.addEventListener('DOMContentLoaded', function () {
 		const urls = [];
 		const mdRegex = /!\[.*?\]\((.*?)\)/g;
 		let match;
-		while ((match = mdRegex.exec(text)) !== null) urls.push(match[1]);
+		while ((match = mdRegex.exec(text)) !== null) {
+			// ✅ URL 파라미터(? 이후) 제거하고 저장
+			let url = match[1];
+			url = url.split('?')[0];  // ✅ ? 이후 제거
+			urls.push(url);
+		}
 		const urlRegex = /(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp))/gi;
 		while ((match = urlRegex.exec(text)) !== null) {
-			if (!urls.includes(match[0])) urls.push(match[0]);
+			let url = match[0];
+			url = url.split('?')[0];  // ✅ ? 이후 제거
+			if (!urls.includes(url)) urls.push(url);
 		}
 		return urls;
 	}
@@ -460,7 +467,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 			// ✅ 미디어나 맵이 있으면 패널 열기
 			if (items.length > 0 || mapAddresses.length > 0) {
-				openMediaPanel(items, text, itemDataList);
+				const uniqueItems = items.filter((item, index, self) =>
+					index === self.findIndex(t => t.url === item.url)
+				);
+
+				openMediaPanel(uniqueItems, text, itemDataList);
 
 				const reopenBtn = document.createElement('button');
 				reopenBtn.className = 'media-preview-btn';
