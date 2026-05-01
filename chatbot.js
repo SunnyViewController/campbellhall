@@ -117,6 +117,11 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 	});
 
+	// ✅ 페이지 이탈/새로고침 시 음성 중지
+	window.addEventListener('beforeunload', () => {
+		speechSynthesis.cancel();
+	});
+
 	closeBtn.addEventListener('click', function () {
 		speechSynthesis.cancel();
 		chatbotWindow.style.display = 'none';
