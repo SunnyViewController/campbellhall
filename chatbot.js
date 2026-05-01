@@ -217,6 +217,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		const isMobile = window.innerWidth <= 600;
 
 		content.innerHTML = '';
+
 		// ✅ MAP 주소 확인
 		const mapAddresses = infoText ? extractMapUrls(infoText) : [];
 		// ✅ 패널 제목 동적 설정
@@ -233,7 +234,17 @@ document.addEventListener('DOMContentLoaded', function () {
 			panelTitle.textContent = '📷 Media Preview';
 		}
 
-		mediaItems.forEach((item, index) => {
+		// ✅ 중복 URL 제거
+		const uniqueItems = [];
+		const seenUrls = new Set();
+		mediaItems.forEach(item => {
+			if (!seenUrls.has(item.url)) {
+				seenUrls.add(item.url);
+				uniqueItems.push(item);
+			}
+		});
+
+		uniqueItems.forEach((item, index) => {
 			// 이미지/비디오 래퍼
 			const wrapper = document.createElement('div');
 			wrapper.className = 'media-item-wrapper';
