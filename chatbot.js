@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	const aiAvatarUrl = 'mascot.png';
 	const userAvatarUrl = 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
 
+	/*
 	const voiceBtn = document.getElementById('voiceInputBtn');
 
 	// ✅ 음성 모드 상태
@@ -90,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			voiceBtn.textContent = '🔴';
 			isListening = true;
 		}
-	});
+	});*/
 
 	if (window.innerWidth <= 600) {
 		chatbotWindow.classList.add('initial-position');
@@ -473,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		container.appendChild(content);
 
 		// ✅ "다시 듣기" 버튼만 남김
-		if (sender === 'bot') {
+		/* voice!! if (sender === 'bot') {
 			const cleanText = text
 				.replace(/\[MAP:.*?\]/g, '')
 				.replace(/\[ITEM_DATA:.*?\]/g, '')
@@ -493,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				speechSynthesis.speak(utterance);
 			};
 			content.appendChild(speakBtn);
-		}
+		}*/
 
 		if (sender === 'user') {
 			const ua = document.createElement('div');
@@ -517,7 +518,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	// ================================================
 
 	async function sendMessageToBackend() {
-		speechSynthesis.cancel();
+		// voice!! speechSynthesis.cancel();
 		const message = chatbotInput.value.trim();
 		if (!message) return;
 
@@ -547,7 +548,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		const requestData = {
 			message: message,
-			school_id: "2ZQLb1N7bafnESAPXauOIL2y0m03",
+			school_id: "GRTalivrcZfW2MkFZmGDEDGnbjD2",
 			user_id: "anonymous",
 			history: conversationMemory.slice(-10)
 		};
@@ -617,7 +618,7 @@ document.addEventListener('DOMContentLoaded', function () {
 							chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 
 							// ✅ 문장 단위로 실시간 음성 읽기
-							if (voiceMode) {
+							/* voice!! if (voiceMode) {
 								voiceQueue += d.content;
 
 								// 문장 종료 문자(. ! ? \n)가 나오면 읽기
@@ -638,7 +639,7 @@ document.addEventListener('DOMContentLoaded', function () {
 									}
 									voiceQueue = '';
 								}
-							}
+							}*/
 						} else if (d.type === 'error') {
 							respDiv.textContent = `Error: ${d.content}`;
 							reader.cancel();

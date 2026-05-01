@@ -3777,33 +3777,33 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
                     <!-- ✅ 음성 모드 토글 버튼 -->
-                    <button id="voiceModeBtn" title="Voice Mode OFF"
-                            style="background:rgba(255,255,255,0.2);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">
-                        🔊
-                    </button>
+                    <!-- voice!! <button id="voiceModeBtn" title="Voice Mode OFF"
+            style="background:rgba(255,255,255,0.2);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">
+        🔊
+    </button>-->
                     <button id="chatbotCloseBtn" style="background: rgba(255, 255, 255, 0.2);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;">
                         ×
                     </button>
                 </div>
-                
-            </div>
 
-            <div class="chatbot-body" id="chatbotBody">
-                <div id="chatbotMessages"></div>
+    </div>
 
-                <!-- 🆕 미디어 슬라이드 패널 -->
-                <div id="mediaSlidePanel" class="media-slide-panel">
-                    <div class="panel-header-fixed">
-                        <span id="panelTitle" style="font-weight: 600; font-size: 15px;">📷 Media Preview</span>
-                        <button class="panel-close-btn" onclick="closeMediaPanel()">✕</button>
+    <div class="chatbot-body" id="chatbotBody">
+        <div id="chatbotMessages"></div>
+
+        <!-- 🆕 미디어 슬라이드 패널 -->
+                    <div id="mediaSlidePanel" class="media-slide-panel">
+                        <div class="panel-header-fixed">
+                            <span id="panelTitle" style="font-weight: 600; font-size: 15px;">📷 Media Preview</span>
+                            <button class="panel-close-btn" onclick="closeMediaPanel()">✕</button>
+                        </div>
+                        <div id="mediaPanelContent" class="panel-content-scroll"></div>
                     </div>
-                    <div id="mediaPanelContent" class="panel-content-scroll"></div>
                 </div>
-            </div>
 
             <div class="chatbot-footer">
                 <div class="chatbot-input">
-                    <button id="voiceInputBtn" title="Voice input" style="background:none;border:none;cursor:pointer;font-size:20px;padding:8px;">🎤</button>
+                    <!-- voice!! <button id="voiceInputBtn" title="Voice input" style="background:none;border:none;cursor:pointer;font-size:20px;padding:8px;">🎤</button>-->
                     <input type="text" id="chatbotInput" placeholder="Type a message...">
                     <button id="chatbotSendBtn">Send</button>
                 </div>
@@ -3813,9 +3813,9 @@
 
 
     <!-- HTML 파일의 <head> 섹션에 추가 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <script src="chatbot.js"></script>
+                    <script src="chatbot.js"></script>
 
 
 
