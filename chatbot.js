@@ -419,6 +419,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		// 2. 비디오 링크 → 아이콘
 		formatted = formatted.replace(/\[(.*?)\]\(.*?\.(mp4|mov|webm|avi)\)/gi, '<span style="font-size:12px;color:#888;">🎬 <em>$1</em></span>');
+		// ✅ Vimeo 링크 → 아이콘
+		formatted = formatted.replace(/\[(.*?)\]\((https?:\/\/player\.vimeo\.com\/[^)]+)\)/gi, '<span style="font-size:12px;color:#888;">🎬 <em>$1</em></span>');
+		// ✅ YouTube 링크 → 아이콘
+		formatted = formatted.replace(/\[(.*?)\]\((https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[^)]+)\)/gi, '<span style="font-size:12px;color:#888;">🎬 <em>$1</em></span>');
 
 		// 3. [ITEM_DATA: ...] → 숨김
 		formatted = formatted.replace(/\[ITEM_DATA:\s*(.*?)\]/g, '<span class="item-data" style="display:none;" data-info="$1"></span>');
