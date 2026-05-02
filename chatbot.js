@@ -167,29 +167,50 @@ document.addEventListener('DOMContentLoaded', function () {
 		const mdRegex = /!\[.*?\]\((.*?)\)/g;
 		let match;
 		while ((match = mdRegex.exec(text)) !== null) {
-			// ✅ URL 파라미터(? 이후) 제거하고 저장
 			let url = match[1];
 			url = url.split('?')[0];  // ✅ ? 이후 제거
-			urls.push(url);
+			// ✅ Vimeo/YouTube URL은 이미지에서 제외
+			if (!url.includes('vimeo.com') && !url.includes('youtube.com') && !url.includes('youtu.be')) {
+				urls.push(url);
+			}
 		}
 		const urlRegex = /(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp))/gi;
 		while ((match = urlRegex.exec(text)) !== null) {
 			let url = match[0];
 			url = url.split('?')[0];  // ✅ ? 이후 제거
-			if (!urls.includes(url)) urls.push(url);
+			// ✅ Vimeo/YouTube URL은 이미지에서 제외
+			if (!url.includes('vimeo.com') && !url.includes('youtube.com') && !url.includes('youtu.be')) {
+				if (!urls.includes(url)) urls.push(url);
+			}
 		}
 		return urls;
 	}
 
 	function extractVideoUrls(text) {
 		const urls = [];
+
+		// ✅ 직접 비디오 파일 (.mp4, .mov, .webm, .avi)
 		const mdRegex = /\[.*?\]\((.*?\.(mp4|mov|webm|avi))\)/gi;
 		let match;
 		while ((match = mdRegex.exec(text)) !== null) urls.push(match[1]);
+
 		const urlRegex = /(https?:\/\/[^\s]+\.(mp4|mov|webm|avi))/gi;
 		while ((match = urlRegex.exec(text)) !== null) {
 			if (!urls.includes(match[0])) urls.push(match[0]);
 		}
+
+		// ✅ Vimeo 링크
+		const vimeoRegex = /(https?:\/\/player\.vimeo\.com\/video\/\d+[^\s]*)/gi;
+		while ((match = vimeoRegex.exec(text)) !== null) {
+			if (!urls.includes(match[0])) urls.push(match[0]);
+		}
+
+		// ✅ YouTube 링크
+		const youtubeRegex = /(https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[^\s&]+)/gi;
+		while ((match = youtubeRegex.exec(text)) !== null) {
+			if (!urls.includes(match[0])) urls.push(match[0]);
+		}
+
 		return urls;
 	}
 
@@ -268,16 +289,40 @@ document.addEventListener('DOMContentLoaded', function () {
 				img.onclick = () => openFullscreenViewer(item.url, 'image');
 				wrapper.appendChild(img);
 			} else if (item.type === 'video') {
-				const video = document.createElement('video');
-				video.controls = true;
-				video.preload = 'metadata';
-				video.style.cssText = 'width:100%;border-radius:12px;';
-				video.onclick = () => openFullscreenViewer(item.url, 'video');
-				const source = document.createElement('source');
-				source.src = item.url;
-				source.type = `video/${getVideoType(item.url)}`;
-				video.appendChild(source);
-				wrapper.appendChild(video);
+				// ✅ Vimeo / YouTube / 비디오 파일 구분
+				if (item.url.includes('vimeo.com') || item.url.includes('youtube.com') || item.url.includes('youtu.be')) {
+					let embedUrl = item.url;
+
+					// YouTube → embed 변환
+					if (item.url.includes('youtube.com/watch?v=')) {
+						const videoId = new URL(item.url).searchParams.get('v');
+						embedUrl = `https://www.youtube.com/embed/${videoId}`;
+					} else if (item.url.includes('youtu.be/')) {
+						const videoId = item.url.split('youtu.be/')[1]?.split('?')[0];
+						embedUrl = `https://www.youtube.com/embed/${videoId}`;
+					}
+
+					const iframe = document.createElement('iframe');
+					iframe.src = embedUrl;
+					iframe.width = '100%';
+					iframe.height = '200';
+					iframe.style.cssText = 'border:0;border-radius:12px;';
+					iframe.allowFullscreen = true;
+					iframe.loading = 'lazy';
+					wrapper.appendChild(iframe);
+				} else {
+					// 일반 비디오 파일
+					const video = document.createElement('video');
+					video.controls = true;
+					video.preload = 'metadata';
+					video.style.cssText = 'width:100%;border-radius:12px;';
+					video.onclick = () => openFullscreenViewer(item.url, 'video');
+					const source = document.createElement('source');
+					source.src = item.url;
+					source.type = `video/${getVideoType(item.url)}`;
+					video.appendChild(source);
+					wrapper.appendChild(video);
+				}
 			}
 			content.appendChild(wrapper);
 
