@@ -806,6 +806,19 @@ document.addEventListener('DOMContentLoaded', function () {
 function closeMediaPanel() {
 	const panel = document.getElementById('mediaSlidePanel');
 	if (panel) {
+		// ✅ 패널 안의 모든 iframe 정지 (Vimeo/YouTube)
+		const iframes = panel.querySelectorAll('iframe');
+		iframes.forEach(iframe => {
+			iframe.src = '';  // src 제거 → 비디오 중지
+		});
+
+		// ✅ video 태그도 정지
+		const videos = panel.querySelectorAll('video');
+		videos.forEach(video => {
+			video.pause();
+			video.src = '';  // src 제거
+		});
+
 		panel.style.display = 'none';
 	}
 }
