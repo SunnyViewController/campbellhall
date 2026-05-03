@@ -724,6 +724,8 @@ document.addEventListener('DOMContentLoaded', function () {
 			let voiceQueue = '';
 			let voiceTimeout = null;
 
+			let panelOpened = false;
+
 			while (true) {
 				const { done, value } = await reader.read();
 				if (done) {
@@ -746,6 +748,25 @@ document.addEventListener('DOMContentLoaded', function () {
 							fullResponse += d.content;
 							respDiv.innerHTML = formatMarkdown(fullResponse);
 							chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+							// ✅ 첫 번째 미디어 발견 즉시 패널 열기
+							if (!panelOpened && fullResponse.length > 100) {
+								const imgs = extractImageUrls(fullResponse);
+								const vids = extractVideoUrls(fullResponse);
+								const fils = extractFileUrls(fullResponse);
+
+								if (imgs.length > 0 || vids.length > 0 || fils.length > 0) {
+									const firstItems = [
+										...imgs.map(u => ({ type: 'image', url: u, title: 'Photo' })),
+										...vids.map(u => ({ type: 'video', url: u, title: 'Video' })),
+										...fils.map(u => {
+											const fileName = u.split('/').pop().split('?')[0];
+											return { type: 'file', url: u, title: decodeURIComponent(fileName) };
+										})
+									];
+									openMediaPanel(firstItems, fullResponse, []);
+									panelOpened = true;
+								}
+							}
 
 							// ✅ 문장 단위로 실시간 음성 읽기
 							/* voice!! if (voiceMode) {
