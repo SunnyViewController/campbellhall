@@ -724,7 +724,8 @@ document.addEventListener('DOMContentLoaded', function () {
 			let voiceQueue = '';
 			let voiceTimeout = null;
 
-			let panelOpened = false;
+			const isMobile = window.innerWidth <= 600;
+			let panelOpened = isMobile;
 
 			while (true) {
 				const { done, value } = await reader.read();
