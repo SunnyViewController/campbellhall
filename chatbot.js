@@ -329,13 +329,6 @@ document.addEventListener('DOMContentLoaded', function () {
 					iframe.allowFullscreen = true;
 					iframe.loading = 'lazy';
 					wrapper.appendChild(iframe);
-				} else if (item.type === 'file') {
-					const link = document.createElement('a');
-					link.href = item.url;
-					link.target = '_blank';
-					link.style.cssText = 'display:flex;align-items:center;gap:8px;padding:12px;background:#f0f4ff;border-radius:8px;text-decoration:none;color:#4361ee;font-size:14px;';
-					link.innerHTML = `📎 <span>${item.title}</span> <span style="font-size:11px;color:#888;">(Click to open)</span>`;
-					wrapper.appendChild(link);
 				} else {
 					// 일반 비디오 파일
 					const video = document.createElement('video');
@@ -349,7 +342,15 @@ document.addEventListener('DOMContentLoaded', function () {
 					video.appendChild(source);
 					wrapper.appendChild(video);
 				}
+			} else if (item.type === 'file') {
+				const link = document.createElement('a');
+				link.href = item.url;
+				link.target = '_blank';
+				link.style.cssText = 'display:flex;align-items:center;gap:8px;padding:12px;background:#f0f4ff;border-radius:8px;text-decoration:none;color:#4361ee;font-size:14px;';
+				link.innerHTML = `📎 <span>${item.title}</span> <span style="font-size:11px;color:#888;">(Click to open)</span>`;
+				wrapper.appendChild(link);
 			}
+
 			content.appendChild(wrapper);
 
 			// ✅ 해당 미디어의 ITEM_DATA 표시
