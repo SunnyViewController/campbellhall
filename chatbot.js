@@ -267,15 +267,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		// ✅ MAP 주소 확인
 		const mapAddresses = infoText ? extractMapUrls(infoText) : [];
+		
 		// ✅ 패널 제목 동적 설정
 		const hasMedia = mediaItems.length > 0;
 		const hasMap = mapAddresses.length > 0;
+		const hasFile = mediaItems.some(item => item.type === 'file');
+		const hasImage = mediaItems.some(item => item.type === 'image');
+		const hasVideo = mediaItems.some(item => item.type === 'video');
 
-		if (hasMedia && hasMap) {
+		if (hasImage && hasVideo && hasFile && hasMap) {
+			panelTitle.textContent = '📷🎬📎🗺️ Media, Files & Map';
+		} else if (hasImage && hasVideo && hasMap) {
+			panelTitle.textContent = '📷🎬🗺️ Media & Map';
+		} else if (hasFile && hasMap) {
+			panelTitle.textContent = '📎🗺️ Files & Map';
+		} else if (hasFile && (hasImage || hasVideo)) {
+			panelTitle.textContent = '📷🎬📎 Media & Files';
+		} else if (hasMedia && hasMap) {
 			panelTitle.textContent = '📷🗺️ Media & Map';
 		} else if (hasMap) {
 			panelTitle.textContent = '🗺️ Map';
-		} else if (mediaItems.some(item => item.type === 'video')) {
+		} else if (hasFile) {
+			panelTitle.textContent = '📎 Files';
+		} else if (hasVideo) {
 			panelTitle.textContent = '🎬 Media Preview';
 		} else {
 			panelTitle.textContent = '📷 Media Preview';
