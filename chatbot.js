@@ -471,8 +471,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		let formatted = text;
 
-		// ✅ 이미지 → 아이콘과 title 유지
-		formatted = formatted.replace(/!\[(.*?)\]\(.*?\)(\n)?/g, '📷 <em>$1</em>');
+		// ✅ 이미지 → 완전 제거 (텍스트만 표시)
+		formatted = formatted.replace(/!\[.*?\]\(.*?\)(\n)?/g, '');
 
 		// ✅ 비디오(Vimeo/YouTube/직접 파일) → 아이콘으로만 표시
 		formatted = formatted.replace(/\[(.*?)\]\((.*?\.(mp4|mov|webm|avi))\)/gi, '🎬 <em>$1</em>');
