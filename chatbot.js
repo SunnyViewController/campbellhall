@@ -292,6 +292,11 @@ document.addEventListener('DOMContentLoaded', function () {
 		});
 
 		uniqueItems.forEach((item, index) => {
+			// ✅ itemDataList에서 실제 title 가져오기
+			let displayTitle = item.title;
+			if (itemDataList && itemDataList[index]) {
+				displayTitle = itemDataList[index].title || item.title;
+			}
 			// 이미지/비디오 래퍼
 			const wrapper = document.createElement('div');
 			wrapper.className = 'media-item-wrapper';
@@ -302,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			if (item.type === 'image') {
 				const img = document.createElement('img');
 				img.src = item.url;
-				img.alt = item.title;
+				img.alt = displayTitle;
 				img.loading = 'lazy';
 				img.style.cssText = 'width:100%;border-radius:12px;';
 				img.onclick = () => openFullscreenViewer(item.url, 'image');
@@ -330,25 +335,31 @@ document.addEventListener('DOMContentLoaded', function () {
 					iframe.loading = 'lazy';
 					wrapper.appendChild(iframe);
 				} else {
-					// 일반 비디오 파일
 					const video = document.createElement('video');
 					video.controls = true;
 					video.preload = 'metadata';
 					video.style.cssText = 'width:100%;border-radius:12px;';
 					video.onclick = () => openFullscreenViewer(item.url, 'video');
+					// ✅ video 아래에 title 표시 추가
+					const titleLabel = document.createElement('div');
+					titleLabel.style.cssText = 'font-size:13px;color:#888;margin-top:4px;text-align:center;';
+					titleLabel.textContent = displayTitle;
+
 					const source = document.createElement('source');
 					source.src = item.url;
 					source.type = `video/${getVideoType(item.url)}`;
 					video.appendChild(source);
 					wrapper.appendChild(video);
+					wrapper.appendChild(titleLabel);  // ✅ 제목 표시
 				}
 			} else if (item.type === 'file') {
 				const link = document.createElement('a');
 				link.href = item.url;
 				link.target = '_blank';
 				link.style.cssText = 'display:flex;align-items:center;gap:8px;padding:12px;background:#f0f4ff;border-radius:8px;text-decoration:none;color:#4361ee;font-size:14px;';
-				link.innerHTML = `📎 <span>${item.title}</span> <span style="font-size:11px;color:#888;">(Click to open)</span>`;
+				link.innerHTML = `📎 <span>${displayTitle}</span> <span style="font-size:11px;color:#888;">(Click to open)</span>`;
 				wrapper.appendChild(link);
+				content.appendChild(wrapper);
 			}
 
 			content.appendChild(wrapper);
@@ -525,9 +536,12 @@ document.addEventListener('DOMContentLoaded', function () {
 			const videos = extractVideoUrls(text);
 			const files = extractFileUrls(text);
 			const items = [
-				...images.map(u => ({ type: 'image', url: u, title: 'Photo' })),
-				...videos.map(u => ({ type: 'video', url: u, title: 'Video' })),
-				...files.map(u => ({ type: 'file', url: u, title: 'File' }))
+				...images.map((url, i) => ({ type: 'image', url, title: 'Photo', mediaIndex: i })),
+				...videos.map((url, i) => ({ type: 'video', url, title: 'Video', mediaIndex: i + images.length })),
+				...files.map((url, i) => {
+					const fileName = url.split('/').pop().split('?')[0];
+					return { type: 'file', url, title: decodeURIComponent(fileName), mediaIndex: i + images.length + videos.length };
+				})
 			];
 			console.log('🔍 images found:', images.length, images);
 			console.log('🔍 videos found:', videos.length, videos);
