@@ -471,20 +471,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		let formatted = text;
 
-		// ✅ 이미지/비디오/파일 마크다운 → 완전 제거
+		// ✅ 이미지 → 완전 제거 (텍스트만 표시)
 		formatted = formatted.replace(/!\[.*?\]\(.*?\)(\n)?/g, '');
-		formatted = formatted.replace(/\[.*?\]\(.*?\.(mp4|mov|webm|avi)\)(\n)?/gi, '');
-		formatted = formatted.replace(/\[.*?\]\((https?:\/\/player\.vimeo\.com\/[^)]+)\)(\n)?/gi, '');
-		formatted = formatted.replace(/\[.*?\]\((https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[^)]+)\)(\n)?/gi, '');
-		formatted = formatted.replace(/\[.*?\]\((.*?\.(pdf|doc|docx|xlsx|ppt|pptx))\)(\n)?/gi, '');
+
+		// ✅ 비디오(Vimeo/YouTube/직접 파일) → 아이콘으로만 표시
+		formatted = formatted.replace(/\[(.*?)\]\((.*?\.(mp4|mov|webm|avi))\)/gi, '🎬 <em>$1</em>');
+		formatted = formatted.replace(/\[(.*?)\]\((https?:\/\/player\.vimeo\.com\/[^)]+)\)/gi, '🎬 <em>$1</em>');
+		formatted = formatted.replace(/\[(.*?)\]\((https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[^)]+)\)/gi, '🎬 <em>$1</em>');
+
+		// ✅ 파일(PDF 등) → 아이콘으로만 표시 (파일명은 유지!)
+		formatted = formatted.replace(/\[(.*?)\]\((.*?\.(pdf|doc|docx|xlsx|ppt|pptx))\)/gi, '📎 <em>$1</em>');
 
 		// ✅ [ITEM_DATA: ...], [MAP: ...] → 숨김
 		formatted = formatted.replace(/\[ITEM_DATA:\s*(.*?)\]/g, '');
 		formatted = formatted.replace(/\[MAP:\s*(.*?)\]/g, '');
 
-		// ✅ 연속된 빈 줄 → 하나로
+		// ✅ 빈 줄 정리
 		formatted = formatted.replace(/\n{3,}/g, '\n\n');
-		formatted = formatted.replace(/^\n+/, '');  // 시작 부분 빈 줄 제거
+		formatted = formatted.replace(/^\n+/, '');
 
 		// 4. **bold**
 		formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
