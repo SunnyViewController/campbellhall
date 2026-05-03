@@ -178,8 +178,9 @@ document.addEventListener('DOMContentLoaded', function () {
 		while ((match = urlRegex.exec(text)) !== null) {
 			let url = match[0];
 			url = url.split('?')[0];  // ✅ ? 이후 제거
-			// ✅ Vimeo/YouTube URL은 이미지에서 제외
-			if (!url.includes('vimeo.com') && !url.includes('youtube.com') && !url.includes('youtu.be')) {
+			
+			// ✅ PDF, Vimeo, YouTube URL은 이미지에서 제외
+			if (!url.includes('vimeo.com') && !url.includes('youtube.com') && !url.includes('youtu.be') && !url.endsWith('.pdf')) {
 				if (!urls.includes(url)) urls.push(url);
 			}
 		}
@@ -224,6 +225,21 @@ document.addEventListener('DOMContentLoaded', function () {
 		return urls;
 	}
 
+	function extractFileUrls(text) {
+		const urls = [];
+		// PDF, DOC, DOCX, XLSX 링크
+		const mdRegex = /\[.*?\]\((.*?\.(pdf|doc|docx|xlsx|ppt|pptx))\)/gi;
+		let match;
+		while ((match = mdRegex.exec(text)) !== null) {
+			if (!urls.includes(match[1])) urls.push(match[1]);
+		}
+		// 일반 URL 중 파일 확장자
+		const urlRegex = /(https?:\/\/[^\s]+\.(pdf|doc|docx|xlsx|ppt|pptx))/gi;
+		while ((match = urlRegex.exec(text)) !== null) {
+			if (!urls.includes(match[0])) urls.push(match[0]);
+		}
+		return urls;
+	}
 
 	function getVideoType(url) {
 		if (url.endsWith('.mp4')) return 'mp4';
@@ -310,6 +326,13 @@ document.addEventListener('DOMContentLoaded', function () {
 					iframe.allowFullscreen = true;
 					iframe.loading = 'lazy';
 					wrapper.appendChild(iframe);
+				} else if (item.type === 'file') {
+					const link = document.createElement('a');
+					link.href = item.url;
+					link.target = '_blank';
+					link.style.cssText = 'display:flex;align-items:center;gap:8px;padding:12px;background:#f0f4ff;border-radius:8px;text-decoration:none;color:#4361ee;font-size:14px;';
+					link.innerHTML = `📎 <span>${item.title}</span> <span style="font-size:11px;color:#888;">(Click to open)</span>`;
+					wrapper.appendChild(link);
 				} else {
 					// 일반 비디오 파일
 					const video = document.createElement('video');
@@ -423,6 +446,8 @@ document.addEventListener('DOMContentLoaded', function () {
 		formatted = formatted.replace(/\[(.*?)\]\((https?:\/\/player\.vimeo\.com\/[^)]+)\)/gi, '<span style="font-size:12px;color:#888;">🎬 <em>$1</em></span>');
 		// ✅ YouTube 링크 → 아이콘
 		formatted = formatted.replace(/\[(.*?)\]\((https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[^)]+)\)/gi, '<span style="font-size:12px;color:#888;">🎬 <em>$1</em></span>');
+		// PDF/파일 링크 → 아이콘
+		formatted = formatted.replace(/\[(.*?)\]\((.*?\.(pdf|doc|docx|xlsx|ppt|pptx))\)/gi, '<span style="font-size:12px;color:#888;">📎 <em>$1</em></span>');
 
 		// 3. [ITEM_DATA: ...] → 숨김
 		formatted = formatted.replace(/\[ITEM_DATA:\s*(.*?)\]/g, '<span class="item-data" style="display:none;" data-info="$1"></span>');
@@ -494,9 +519,11 @@ document.addEventListener('DOMContentLoaded', function () {
 		if (sender === 'bot') {
 			const images = extractImageUrls(text);
 			const videos = extractVideoUrls(text);
+			const files = extractFileUrls(text);
 			const items = [
 				...images.map(u => ({ type: 'image', url: u, title: 'Photo' })),
-				...videos.map(u => ({ type: 'video', url: u, title: 'Video' }))
+				...videos.map(u => ({ type: 'video', url: u, title: 'Video' })),
+				...files.map(u => ({ type: 'file', url: u, title: 'File' }))
 			];
 			console.log('🔍 images found:', images.length, images);
 			console.log('🔍 videos found:', videos.length, videos);
