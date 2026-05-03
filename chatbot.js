@@ -572,6 +572,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 			// ✅ MAP 주소 확인
 			const mapAddresses = extractMapUrls(text);
+			const hasFiles = files.length > 0;
+			const hasImages = images.length > 0;
+			const hasVideos = videos.length > 0;
 
 			// ✅ 미디어나 맵이 있으면 패널 열기
 			if (items.length > 0 || mapAddresses.length > 0) {
@@ -584,13 +587,21 @@ document.addEventListener('DOMContentLoaded', function () {
 				const reopenBtn = document.createElement('button');
 				reopenBtn.className = 'media-preview-btn';
 
-				// 버튼 텍스트를 상황에 맞게
-				if (items.length > 0 && mapAddresses.length > 0) {
-					reopenBtn.textContent = '📷🗺️ View Attached Media & Map';
+				// ✅ 버튼 텍스트 동적 설정
+				if (hasImages && hasVideos && hasFiles && mapAddresses.length > 0) {
+					reopenBtn.textContent = '📷🎬📎🗺️ View All';
+				} else if (hasFiles && mapAddresses.length > 0) {
+					reopenBtn.textContent = '📎🗺️ View Files & Map';
+				} else if (hasFiles && (hasImages || hasVideos)) {
+					reopenBtn.textContent = '📷📎 View Media & Files';
+				} else if (hasFiles) {
+					reopenBtn.textContent = '📎 View Files';
+				} else if (items.length > 0 && mapAddresses.length > 0) {
+					reopenBtn.textContent = '📷🗺️ View Media & Map';
 				} else if (mapAddresses.length > 0) {
 					reopenBtn.textContent = '🗺️ View Map';
 				} else {
-					reopenBtn.textContent = '📷 View Attached Media';
+					reopenBtn.textContent = '📷 View Media';
 				}
 
 				reopenBtn.style.cssText = 'background:#f0f4ff;border:1px solid #4361ee;color:#4361ee;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px;margin-top:4px;';
