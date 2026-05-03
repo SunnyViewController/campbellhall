@@ -466,17 +466,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		let formatted = text;
 
-		// 1. 이미지 마크다운 → 아이콘
-		formatted = formatted.replace(/!\[(.*?)\]\(.*?\)/g, '<span style="font-size:12px;color:#888;">📷 <em>$1</em></span>');
-
-		// 2. 비디오 링크 → 아이콘
-		formatted = formatted.replace(/\[(.*?)\]\(.*?\.(mp4|mov|webm|avi)\)/gi, '<span style="font-size:12px;color:#888;">🎬 <em>$1</em></span>');
-		// ✅ Vimeo 링크 → 아이콘
-		formatted = formatted.replace(/\[(.*?)\]\((https?:\/\/player\.vimeo\.com\/[^)]+)\)/gi, '<span style="font-size:12px;color:#888;">🎬 <em>$1</em></span>');
-		// ✅ YouTube 링크 → 아이콘
-		formatted = formatted.replace(/\[(.*?)\]\((https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[^)]+)\)/gi, '<span style="font-size:12px;color:#888;">🎬 <em>$1</em></span>');
-		// PDF/파일 링크 → 아이콘
-		formatted = formatted.replace(/\[(.*?)\]\((.*?\.(pdf|doc|docx|xlsx|ppt|pptx))\)/gi, '<span style="font-size:12px;color:#888;">📎 <em>$1</em></span>');
+		// ✅ 이미지/비디오/파일 마크다운 → 완전 제거
+		formatted = formatted.replace(/!\[(.*?)\]\(.*?\)/g, '');
+		formatted = formatted.replace(/\[(.*?)\]\(.*?\.(mp4|mov|webm|avi)\)/gi, '');
+		formatted = formatted.replace(/\[(.*?)\]\((https?:\/\/player\.vimeo\.com\/[^)]+)\)/gi, '');
+		formatted = formatted.replace(/\[(.*?)\]\((https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[^)]+)\)/gi, '');
+		formatted = formatted.replace(/\[(.*?)\]\((.*?\.(pdf|doc|docx|xlsx|ppt|pptx))\)/gi, '');
 
 		// 3. [ITEM_DATA: ...] → 숨김
 		formatted = formatted.replace(/\[ITEM_DATA:\s*(.*?)\]/g, '<span class="item-data" style="display:none;" data-info="$1"></span>');
