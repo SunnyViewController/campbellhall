@@ -227,17 +227,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	function extractFileUrls(text) {
 		const urls = [];
-		// PDF, DOC, DOCX, XLSX 링크
-		const mdRegex = /\[.*?\]\((.*?\.(pdf|doc|docx|xlsx|ppt|pptx))\)/gi;
+
+		// ✅ 마크다운 링크 중 .pdf로 끝나는 모든 URL (설명 상관없이)
+		const mdRegex = /\[(.*?)\]\((https?:\/\/[^\s)]*\.pdf[^\s)]*)\)/gi;
 		let match;
 		while ((match = mdRegex.exec(text)) !== null) {
-			if (!urls.includes(match[1])) urls.push(match[1]);
+			if (!urls.includes(match[2])) urls.push(match[2]);  // match[2] = URL
 		}
-		// 일반 URL 중 파일 확장자
-		const urlRegex = /(https?:\/\/[^\s]+\.(pdf|doc|docx|xlsx|ppt|pptx))/gi;
+
+		// 일반 URL 중 .pdf
+		const urlRegex = /(https?:\/\/[^\s]+\.pdf[^\s)]*)/gi;
 		while ((match = urlRegex.exec(text)) !== null) {
 			if (!urls.includes(match[0])) urls.push(match[0]);
 		}
+
 		return urls;
 	}
 
