@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			content.appendChild(wrapper);
 
 			// ✅ 해당 미디어의 ITEM_DATA 표시
-			if (itemDataList && itemDataList[index]) {
+			if (itemDataList && itemDataList[item.dataIndex]) {
 				const data = itemDataList[item.dataIndex];
 				const infoDiv = document.createElement('div');
 				infoDiv.className = 'media-info-section';
