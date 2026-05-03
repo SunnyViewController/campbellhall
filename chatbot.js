@@ -311,10 +311,10 @@ document.addEventListener('DOMContentLoaded', function () {
 		});
 
 		uniqueItems.forEach((item, index) => {
-			// ✅ itemDataList에서 실제 title 가져오기
+			// ✅ dataIndex로 itemDataList 참조
 			let displayTitle = item.title;
-			if (itemDataList && itemDataList[index]) {
-				displayTitle = itemDataList[index].title || item.title;
+			if (itemDataList && itemDataList[item.dataIndex]) {
+				displayTitle = itemDataList[item.dataIndex].title || item.title;
 			}
 			// 이미지/비디오 래퍼
 			const wrapper = document.createElement('div');
@@ -385,7 +385,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 			// ✅ 해당 미디어의 ITEM_DATA 표시
 			if (itemDataList && itemDataList[index]) {
-				const data = itemDataList[index];
+				const data = itemDataList[item.dataIndex];
 				const infoDiv = document.createElement('div');
 				infoDiv.className = 'media-info-section';
 				infoDiv.style.cssText = 'margin-top:0;margin-bottom:16px;padding:12px;background:#f8f9fa;border-radius:10px;font-size:13px;line-height:1.5;color:#333;';
@@ -556,12 +556,13 @@ document.addEventListener('DOMContentLoaded', function () {
 			const images = extractImageUrls(text);
 			const videos = extractVideoUrls(text);
 			const files = extractFileUrls(text);
+			let dataIndex = 0;
 			const items = [
-				...images.map((url, i) => ({ type: 'image', url, title: 'Photo', mediaIndex: i })),
-				...videos.map((url, i) => ({ type: 'video', url, title: 'Video', mediaIndex: i + images.length })),
+				...images.map((url, i) => ({ type: 'image', url, title: 'Photo', dataIndex: dataIndex++ })),
+				...videos.map((url, i) => ({ type: 'video', url, title: 'Video', dataIndex: dataIndex++ })),
 				...files.map(f => {
-					const fileName = f.url.split('/').pop().split('?')[0];  // 원래 파일명
-					return { type: 'file', url: f.url, title: decodeURIComponent(fileName) };
+					const fileName = f.url.split('/').pop().split('?')[0];
+					return { type: 'file', url: f.url, title: decodeURIComponent(fileName), dataIndex: dataIndex++ };
 				})
 			];
 			console.log('🔍 images found:', images.length, images);
