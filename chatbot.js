@@ -227,20 +227,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	function extractFileUrls(text) {
 		const urls = [];
-
-		// ✅ 마크다운 링크 중 .pdf로 끝나는 모든 URL (설명 상관없이)
+		// ✅ URL과 title을 함께 저장
 		const mdRegex = /\[(.*?)\]\((https?:\/\/[^\s)]*\.pdf[^\s)]*)\)/gi;
 		let match;
 		while ((match = mdRegex.exec(text)) !== null) {
-			if (!urls.includes(match[2])) urls.push(match[2]);  // match[2] = URL
+			urls.push({
+				url: match[2],        // URL
+				title: match[1]       // 마크다운 title (예: "Download here", "Teacher Form")
+			});
 		}
-
-		// 일반 URL 중 .pdf
+		// 일반 URL (title 없는 경우)
 		const urlRegex = /(https?:\/\/[^\s]+\.pdf[^\s)]*)/gi;
 		while ((match = urlRegex.exec(text)) !== null) {
-			if (!urls.includes(match[0])) urls.push(match[0]);
+			if (!urls.find(u => u.url === match[0])) {
+				urls.push({
+					url: match[0],
+					title: match[0].split('/').pop().split('?')[0]  // 파일명을 title로
+				});
+			}
 		}
-
 		return urls;
 	}
 
@@ -547,10 +552,11 @@ document.addEventListener('DOMContentLoaded', function () {
 			const items = [
 				...images.map((url, i) => ({ type: 'image', url, title: 'Photo', mediaIndex: i })),
 				...videos.map((url, i) => ({ type: 'video', url, title: 'Video', mediaIndex: i + images.length })),
-				...files.map((url, i) => {
-					const fileName = url.split('/').pop().split('?')[0];
-					return { type: 'file', url, title: decodeURIComponent(fileName), mediaIndex: i + images.length + videos.length };
-				})
+				...files.map(f => ({
+					type: 'file',
+					url: f.url,
+					title: f.title  // ✅ 마크다운 title 또는 파일명
+				}))
 			];
 			console.log('🔍 images found:', images.length, images);
 			console.log('🔍 videos found:', videos.length, videos);
@@ -765,10 +771,11 @@ document.addEventListener('DOMContentLoaded', function () {
 									const firstItems = [
 										...imgs.map(u => ({ type: 'image', url: u, title: 'Photo' })),
 										...vids.map(u => ({ type: 'video', url: u, title: 'Video' })),
-										...fils.map(u => {
-											const fileName = u.split('/').pop().split('?')[0];
-											return { type: 'file', url: u, title: decodeURIComponent(fileName) };
-										})
+										...fils.map(f => ({
+											type: 'file',
+											url: f.url,
+											title: f.title  // ✅ 마크다운 title 사용
+										}))
 									];
 									openMediaPanel(firstItems, fullResponse, []);
 									panelOpened = true;
