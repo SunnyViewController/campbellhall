@@ -497,10 +497,10 @@ document.addEventListener('DOMContentLoaded', function () {
 		formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
 
 		// 6. ## heading
-		formatted = formatted.replace(/## (.*?)(\n|$)/g, '<h3 style="margin:0 0 8px;font-size:16px;font-weight:600;">$1</h3>');
+		formatted = formatted.replace(/^## (.*?)(\n|$)/gm, '<h3 style="margin:0 0 8px;font-size:16px;font-weight:600;">$1</h3>');
 
-		// 7. # heading
-		formatted = formatted.replace(/# (.*?)(\n|$)/g, '<h2 style="margin:0 0 10px;font-size:18px;font-weight:600;">$1</h2>');
+		// 7. # heading → # 제거하고 heading 스타일만 적용
+		formatted = formatted.replace(/^# (.*?)(\n|$)/gm, '<h2 style="margin:0 0 10px;font-size:18px;font-weight:600;">$1</h2>');
 
 		// 8. list
 		formatted = formatted.replace(/^- (.*?)(\n|$)/gm, '<li style="margin-left:15px;margin-bottom:4px;">$1</li>');
