@@ -559,11 +559,10 @@ document.addEventListener('DOMContentLoaded', function () {
 			const items = [
 				...images.map((url, i) => ({ type: 'image', url, title: 'Photo', mediaIndex: i })),
 				...videos.map((url, i) => ({ type: 'video', url, title: 'Video', mediaIndex: i + images.length })),
-				...files.map(f => ({
-					type: 'file',
-					url: f.url,
-					title: f.title  // ✅ 마크다운 title 또는 파일명
-				}))
+				...files.map(f => {
+					const fileName = f.url.split('/').pop().split('?')[0];  // 원래 파일명
+					return { type: 'file', url: f.url, title: decodeURIComponent(fileName) };
+				})
 			];
 			console.log('🔍 images found:', images.length, images);
 			console.log('🔍 videos found:', videos.length, videos);
