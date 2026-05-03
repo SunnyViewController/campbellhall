@@ -378,7 +378,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				link.style.cssText = 'display:flex;align-items:center;gap:8px;padding:12px;background:#f0f4ff;border-radius:8px;text-decoration:none;color:#4361ee;font-size:14px;';
 				link.innerHTML = `📎 <span>${displayTitle}</span> <span style="font-size:11px;color:#888;">(Click to open)</span>`;
 				wrapper.appendChild(link);
-				content.appendChild(wrapper);
+				// ✅ content.appendChild(wrapper); ← 이 줄 삭제!
 			}
 
 			content.appendChild(wrapper);
