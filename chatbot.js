@@ -498,7 +498,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		// 6. ## heading
 		formatted = formatted.replace(/^## (.*?)(\n|$)/gm, '<h3 style="margin:0 0 8px;font-size:16px;font-weight:600;">$1</h3>');
-
+		// ###
+		formatted = formatted.replace(/^### (.*?)(\n|$)/gm, '<h4 style="margin:0 0 6px;font-size:14px;font-weight:600;">$1</h4>');
 		// 7. # heading → # 제거하고 heading 스타일만 적용
 		formatted = formatted.replace(/^# (.*?)(\n|$)/gm, '<h2 style="margin:0 0 10px;font-size:18px;font-weight:600;">$1</h2>');
 
