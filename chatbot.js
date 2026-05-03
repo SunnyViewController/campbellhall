@@ -887,6 +887,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			<div class="quick-questions-title">Quick questions:</div>
 			<button class="quick-btn" data-question="Can you tell me how I can get to Campbell Hall?">🚗 How to get here</button>
 			<button class="quick-btn" data-question="What is the application process? What documents do I need to complete and submit, and what is the deadline?">📝 Application Process</button>
+			<button class="quick-btn" data-question="What is the application timeline for admission?">📝 Application Timeline</button>
 			<button class="quick-btn" data-question="What are the key school events taking place this month?">📅 School Events</button>
 			<button class="quick-btn" data-question="What facilities does Campbell Hall have?">🏫 School Facilities</button>
 			<button class="quick-btn" data-question="How much does it cost to attend Campbell Hall School? What is the tuition?">🏫 Tuition</button>`;
