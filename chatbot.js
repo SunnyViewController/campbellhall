@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		uniqueItems.forEach((item, index) => {
 			// ✅ dataIndex로 itemDataList 참조
 			let displayTitle = item.title;
-			if (itemDataList && itemDataList[item.dataIndex]) {
+			if (item.type !== 'file' && itemDataList && itemDataList[item.dataIndex]) {
 				displayTitle = itemDataList[item.dataIndex].title || item.title;
 			}
 			// 이미지/비디오 래퍼
