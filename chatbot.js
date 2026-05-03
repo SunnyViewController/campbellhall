@@ -472,16 +472,19 @@ document.addEventListener('DOMContentLoaded', function () {
 		let formatted = text;
 
 		// ✅ 이미지/비디오/파일 마크다운 → 완전 제거
-		formatted = formatted.replace(/!\[(.*?)\]\(.*?\)/g, '');
-		formatted = formatted.replace(/\[(.*?)\]\(.*?\.(mp4|mov|webm|avi)\)/gi, '');
-		formatted = formatted.replace(/\[(.*?)\]\((https?:\/\/player\.vimeo\.com\/[^)]+)\)/gi, '');
-		formatted = formatted.replace(/\[(.*?)\]\((https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[^)]+)\)/gi, '');
-		formatted = formatted.replace(/\[(.*?)\]\((.*?\.(pdf|doc|docx|xlsx|ppt|pptx))\)/gi, '');
+		formatted = formatted.replace(/!\[.*?\]\(.*?\)(\n)?/g, '');
+		formatted = formatted.replace(/\[.*?\]\(.*?\.(mp4|mov|webm|avi)\)(\n)?/gi, '');
+		formatted = formatted.replace(/\[.*?\]\((https?:\/\/player\.vimeo\.com\/[^)]+)\)(\n)?/gi, '');
+		formatted = formatted.replace(/\[.*?\]\((https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[^)]+)\)(\n)?/gi, '');
+		formatted = formatted.replace(/\[.*?\]\((.*?\.(pdf|doc|docx|xlsx|ppt|pptx))\)(\n)?/gi, '');
 
-		// 3. [ITEM_DATA: ...] → 숨김
-		formatted = formatted.replace(/\[ITEM_DATA:\s*(.*?)\]/g, '<span class="item-data" style="display:none;" data-info="$1"></span>');
-		// ✅ [MAP: ...] → 숨김
-		formatted = formatted.replace(/\[MAP:\s*(.*?)\]/g, '<span class="map-data" style="display:none;" data-address="$1"></span>');
+		// ✅ [ITEM_DATA: ...], [MAP: ...] → 숨김
+		formatted = formatted.replace(/\[ITEM_DATA:\s*(.*?)\]/g, '');
+		formatted = formatted.replace(/\[MAP:\s*(.*?)\]/g, '');
+
+		// ✅ 연속된 빈 줄 → 하나로
+		formatted = formatted.replace(/\n{3,}/g, '\n\n');
+		formatted = formatted.replace(/^\n+/, '');  // 시작 부분 빈 줄 제거
 
 		// 4. **bold**
 		formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
