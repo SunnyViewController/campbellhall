@@ -450,6 +450,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			panel.style.right = 'auto';
 			panel.style.bottom = 'auto';
 			panel.style.width = '370px';
+			panel.style.minHeight = rect.height + 'px';
 			panel.style.maxHeight = rect.height + 'px';
 			panel.style.borderRadius = '16px';
 		}
